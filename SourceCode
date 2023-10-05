@@ -1,0 +1,85 @@
+import java.util.*;
+
+public class StairCase {
+    // class to represent 2d points 
+    public static class Point implements Comparable<Point> {
+        public double x,y;
+        public Point(double x, double y) {
+            this.x = x;this.y = y;
+        }
+        // custom sort based on x coordinates 
+        @Override
+        public int compareTo(Point other) {
+            return Double.compare(this.x, other.x);
+        }
+    }
+
+    // Divide and Conquer Step-> if only 1 point then it is a pareto optimal point 
+    public static List<Point> findStairCase(List<Point> points) {
+        if (points.size() <= 1) {
+            return new ArrayList<>(points);
+        }
+        int length=points.size();
+        int mid = length/2;
+        List<Point> left = findStairCase(points.subList(0, mid));
+        List<Point> right = findStairCase(points.subList(mid, points.size()));
+        return merge(left, right);
+    }
+      
+      // merge step to get combined list of pareto points
+    private static List<Point> merge(List<Point> left, List<Point> right) {
+        List<Point> combinedList = new ArrayList<>();
+        int l = 0, r = 0;
+        // finding the max Y Value from the right pareto list 
+        double maxYValue = Double.NEGATIVE_INFINITY;
+        for (Point p : right) {
+            if (p.y > maxYValue) {
+                maxYValue= p.y;
+            }
+        }
+        
+        // only the points with higher y values(greater than max Y Right  from the left will be added 
+        while (l < left.size() && r< right.size()) {
+            if (left.get(l).x < right.get(r).x || (left.get(l).x == right.get(r).x && left.get(l).y > right.get(r).y)) {
+                if (left.get(l).y > maxYValue) {
+                    combinedList.add(left.get(l));
+                }
+                l++;
+            } else {
+                combinedList.add(right.get(r));
+                r++;
+            }
+        }
+        
+        // remaining points from the right pareto list gets added 
+        while (r < right.size()) {
+            combinedList.add(right.get(r));
+            r++;
+        }
+        return combinedList;
+    }
+
+    // taking random numbers as inputs and with different input sizes 
+    public static void main(String[] args) {
+         Random random = new Random();
+        int[] inputSize = {10,100,1000,10000,100000};
+        int length=inputSize.length;
+        int counter=0;
+        while(counter<length)
+        {
+       List<Point> points = new ArrayList<>();
+       // generating random points which has both x,y cordinates between -1000 and 1000 
+       for(int i=0;i<inputSize[counter];i=i+1)
+       {
+           Point point = new Point( -1000 + (2000) * random.nextDouble(), -1000 + (2000) * random.nextDouble());
+           points.add(point);
+       }
+        long start = System.nanoTime();
+        Collections.sort(points);
+        List<Point> stairCase= findStairCase(points);
+        long end = System.nanoTime(); 
+        System.out.println(end-start); // time 
+        counter=counter+1;
+        }
+    }
+}
